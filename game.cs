@@ -1,6 +1,5 @@
 using System;
 
-
 class Program
 {
     static void Main(string[] args)
@@ -10,6 +9,9 @@ class Program
         player.DisplayGrid();
         for (int i = 0; i < 25; i++)
         {
+            if (player.GameOver) {
+                break;
+            }
             Console.WriteLine("Where do you want to move?");
             string? userAnswer = Console.ReadLine();
 
@@ -27,6 +29,8 @@ class Program
             {
                 player.PlayerMoveVertical(player.West);
             }
+            
+            
              player.PlayerMove(); 
              player.DisplayGrid();
             Console.Clear();
@@ -48,7 +52,7 @@ public class Game : IRoom
             GameGrid[Column, Row] = PlayerLocater;
         }
         
-        Console.WriteLine($"Player column: {Column} Player row: {Row}\n");
+        Console.WriteLine($"\nPlayer column: {Column} Player row: {Row}\n");
 
         char? location;
         for (int i = 0; i< 5; i++)
@@ -77,7 +81,6 @@ public class Game : IRoom
             return false;
         } else
         {
-            Console.WriteLine($"I validated this.. {Column} {Row}");
             return true;
         }
     }
@@ -128,6 +131,7 @@ public class Room : Game, IRoom
 {
     
     internal string Enabled {get; set;}
+    internal bool GameOver {get; set;} = false;
     
     public void PlayerMove() 
     {
@@ -165,7 +169,7 @@ public class Room : Game, IRoom
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("You stumbled onto the hungry wumpus who takes a mere glance before launching itself at you. You have been devoured by the wumpus. \nGame over.");
-            GameOver();
+            GameOver = true;
         } else {
             Console.WriteLine("This room is empty");
         }
@@ -177,26 +181,28 @@ public class Room : Game, IRoom
             {
                 Console.ForegroundColor = ConsoleColor.Blue;
                 Console.WriteLine("The Fountain Of Objects has been reactivated, and you have esaped wtih your life. You win!");
-                GameOver();
+                GameOver= true;
             }
             else if (Column == 4 && Row == 1)
             {
                 Console.WriteLine("The fountain of Objects is here and enabled. Return to the entrance.");
             }
-            else if (Column == 1 && Row == 1 || Column == 1 && Row == 2 || Column == 2 && Row == 2)
-            {
-                Console.WriteLine("You hear the stomach of the wumpus grumbling");
-
-            }
+            else if (Column == 3 && Row == 0 || Column == 4 && Row == 0) {
+            Console.WriteLine("You hear water dripping nearby");
+        } else if (Column == 3 && Row == 1) {
+            Console.WriteLine("Your ears pick up the silence of the fountain but your nose picks up the stench of a large hungry wumpus.");
+        }
+        else if (Column ==1 && Row == 1 || Column == 1 && Row == 2 || Column == 2 && Row == 2)
+        {
+            Console.WriteLine("You hear the stomach of the wumpus grumbling");
+        }
             else if (Column == 3 && Row == 2)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("You stumbled onto the hungry wumpus who takes a mere glance before launching itself at you. You have been devoured by the wumpus. \nGame over.");
-                GameOver();
+                GameOver = true;
             } else {
                 Console.WriteLine("This room is empty.");
             }
         }
-        public bool GameOver() => true;
 }
-
