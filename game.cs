@@ -1,11 +1,13 @@
 using System;
 
+
 class Program
 {
     static void Main(string[] args)
     {
         Player player = new Player();
-
+        Console.WriteLine("Welcome to the fountain of objects!\n\nThe rules of this game are simple. Your task is to enable the fountain of objects inside the abandoned Power Plant and return back safely to the outside world. You are able to move north, south, east, or west. Staying within the bounds of the game. However, there is one caveat. Lurking within the shadows of these rooms lives a hungry ferious wumpus. If you are to encounter this wumpus, then I am afraid your time will have ended. Good luck. \n\n");
+        player.DisplayGrid();
         for (int i = 0; i < 25; i++)
         {
             Console.WriteLine("Where do you want to move?");
@@ -25,11 +27,9 @@ class Program
             {
                 player.PlayerMoveVertical(player.West);
             }
-
-            if(player.RoomReached()) {
-                player.EnabledFountain(); 
-                }
-            player.DisplayGrid();
+             player.PlayerMove(); 
+             player.DisplayGrid();
+            Console.Clear();
         }
         Console.ReadLine();
     }
@@ -44,8 +44,11 @@ public class Game : IRoom
 
     public void DisplayGrid()
     {
+        if(Column == 0 && Row == 0) {
+            GameGrid[Column, Row] = PlayerLocater;
+        }
         
-        Console.WriteLine($"Player column: {Column} Player row: {Row}");
+        Console.WriteLine($"Player column: {Column} Player row: {Row}\n");
 
         char? location;
         for (int i = 0; i< 5; i++)
@@ -66,9 +69,9 @@ public class Game : IRoom
     }
 
 
-    public bool ValidMove()
+    public bool ValidMove(int targetRow, int targetColumn)
     {
-        if (Column > 4 || Column < 0 || Row > 3 || Row < 0 )
+        if (targetColumn > 5 || targetColumn < 0 || targetRow > 4 || targetRow < 0 )
         {
             Console.WriteLine($"Not a valid move");
             return false;
@@ -90,10 +93,12 @@ public class Player: Room
 
     public void PlayerHorizontalMove(int direction)
     {
+        int targetColumn = Column + direction;
             GameGrid[Column, Row] = null;
-            // where to place this function that it make sense...??
-            if(ValidMove()) {
+            if(ValidMove(targetColumn, Row)) {
                  Column += direction;
+                GameGrid[Column, Row] = PlayerLocater;
+             } else {
                 GameGrid[Column, Row] = PlayerLocater;
             }
 
@@ -101,11 +106,13 @@ public class Player: Room
 
     public void PlayerMoveVertical(int direction)
     {
-
+        int targetRow = Row + direction;
             GameGrid[Column, Row] = null;
             
-            if(ValidMove()) {
+            if(ValidMove(Column, targetRow)) {
                  Row += direction;
+                GameGrid[Column, Row] = PlayerLocater;
+            } else {
                 GameGrid[Column, Row] = PlayerLocater;
             }
     }
@@ -119,33 +126,48 @@ public interface IRoom
 }
 public class Room : Game, IRoom
 {
-    public bool RoomReached()
+    
+    internal string Enabled {get; set;}
+    
+    public void PlayerMove() 
+    {
+        if (Enabled == "yes") {
+            EnabledFountain();
+        } else {
+            RoomReached();
+        }
+    }
+    public void RoomReached()
     {
         if (Column == 1 && Row == 0)
         {
             Console.WriteLine("You see light coming from the cavern entrance");
-            return false;
         }
-        else if (Column ==2 && Row == 1)
+        else if (Column ==4 && Row == 1)
         {
             Console.WriteLine("You hear water dripping in this room. The fountain of Objects is here!");
             Console.WriteLine("Would you like to enable the fountain?");
             string? userInput = Console.ReadLine();
-            return true;
+            Enabled = userInput;
+            if (Enabled == "yes") {
+                Console.WriteLine("Return to the exit!");
+            }
+        } else if (Column == 3 && Row == 0 || Column == 4 && Row == 0) {
+            Console.WriteLine("You hear water dripping nearby");
+        } else if (Column == 3 && Row == 1) {
+            Console.WriteLine("Your ears pick up the drips of the fountain but your nose picks up the stench of a large hungry wumpus.");
         }
         else if (Column ==1 && Row == 1 || Column == 1 && Row == 2 || Column == 2 && Row == 2)
         {
             Console.WriteLine("You hear the stomach of the wumpus grumbling");
-            return false;
         }
         else if (Column ==3 && Row ==  2)
         {
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("You stumbled onto the hungry wumpus who takes a mere glance before launching itself at you. You have been devoured by the wumpus. \nGame over.");
             GameOver();
-            return false;
         } else {
             Console.WriteLine("This room is empty");
-            return false;
         }
     }
 
@@ -153,23 +175,28 @@ public class Room : Game, IRoom
         {
             if (Column == 1 && Row == 0)
             {
+                Console.ForegroundColor = ConsoleColor.Blue;
                 Console.WriteLine("The Fountain Of Objects has been reactivated, and you have esaped wtih your life. You win!");
                 GameOver();
             }
-            else if (Column == 2 && Row == 1)
+            else if (Column == 4 && Row == 1)
             {
-                Console.WriteLine("You hear water dripping in this room. The fountain of Objects is here and enabled. Return to the entrance.");
+                Console.WriteLine("The fountain of Objects is here and enabled. Return to the entrance.");
             }
             else if (Column == 1 && Row == 1 || Column == 1 && Row == 2 || Column == 2 && Row == 2)
             {
                 Console.WriteLine("You hear the stomach of the wumpus grumbling");
 
             }
-            else if (Column == 2 && Row == 2)
+            else if (Column == 3 && Row == 2)
             {
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("You stumbled onto the hungry wumpus who takes a mere glance before launching itself at you. You have been devoured by the wumpus. \nGame over.");
                 GameOver();
+            } else {
+                Console.WriteLine("This room is empty.");
             }
         }
-        public static bool GameOver() => true;
+        public bool GameOver() => true;
 }
+
